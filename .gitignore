@@ -1,0 +1,9 @@
+# Posé par l'infrastructure du hackathon. Ce dépôt est PUBLIC.
+*.env
+.env
+hackathon.env
+*.pem
+*_key
+id_*
+node_modules/
+__pycache__/
