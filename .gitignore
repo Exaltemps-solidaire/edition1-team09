@@ -7,3 +7,4 @@ hackathon.env
 id_*
 node_modules/
 __pycache__/
+.next/

@@ -8,7 +8,11 @@ Statut de chaque US à mettre à jour au fil de l'implémentation : `à faire`,
 `en cours`, `fait`.
 
 ## US-01 — Ingestion documentaire
-- **statut** : à faire
+- **statut** : fait — `api/scripts/seed.ts` + `api/src/{ingest,extract,chunk}.ts`
+  lisent `documents-association/` et `matiere/`, extraient le texte (`mammoth`
+  pour `.docx`, brut pour `.md`), découpent en chunks. Testé unitairement
+  (`api/src/chunk.test.ts`) et vérifié en conditions réelles (`bun run seed` :
+  4 documents trouvés, 18 chunks pour le seul document métier).
 - **taille** : S/M
 - **description** : script/route qui lit les documents source (`documents-association/`,
   `matiere/`) et les découpe en chunks avec métadonnées.
@@ -17,7 +21,14 @@ Statut de chaque US à mettre à jour au fil de l'implémentation : `à faire`,
 - **dépendances** : aucune. Bloque US-02.
 
 ## US-02 — Indexation vectorielle / embeddings
-- **statut** : à faire
+- **statut** : fait (bloqué en test réel par absence de `OPENAI_API_KEY`) —
+  pipeline complet codé (`api/src/embed.ts`, `api/src/db.ts`, `api/src/query.ts`),
+  stockage + requête de similarité pgvector testés en intégration
+  (`api/src/db.test.ts`, vecteurs factices déterministes, pas d'appel réseau
+  réel). `bun run seed` échoue avec un `401` explicite et actionnable
+  (`EmbeddingAuthError`) sur l'appel réel à `task:embed`, comportement attendu
+  et documenté (voir `README.md` de `app/`), pas un vecteur mocké
+  silencieusement. À revalider en conditions réelles dès que la clé est posée.
 - **taille** : M
 - **description** : appel `task:embed` sur les chunks de US-01. Nécessite
   `OPENAI_API_KEY` dans `core-platform/.env` avant le premier seed (sinon
@@ -26,7 +37,8 @@ Statut de chaque US à mettre à jour au fil de l'implémentation : `à faire`,
   par similarité.
 - **dépendances** : US-01.
 - **point ouvert** : clé OPENAI à obtenir ou déjà disponible ? à trancher avant de
-  démarrer.
+  démarrer. → tranché le 2026-09-24 : pas pour l'instant (voir `adr.md`
+  de `app/`), on procède sans, blocage documenté plutôt que masqué.
 
 ## US-03 — Modèle de droits / profils
 - **statut** : à faire
@@ -56,7 +68,11 @@ Statut de chaque US à mettre à jour au fil de l'implémentation : `à faire`,
 - **dépendances** : US-03, US-04.
 
 ## US-06 — Interface web chat (P1-1)
-- **statut** : à faire
+- **statut** : en cours — front implémenté (`src/app/chatbot/`), appel réel à
+  `/api/v1/chat` en chemin relatif avec gestion de l'état de chargement et des
+  erreurs ; mais le critère d'acceptation ne peut pas être vérifié de bout en
+  bout tant que US-04 n'existe pas (l'appel échoue en 404 aujourd'hui, géré
+  proprement côté front). Contrat d'API documenté dans `adr.md` (2026-09-24).
 - **taille** : M
 - **description** : front minimal, champ question, affichage réponse + source + date
   + auteur, appel `/api/v1/chat` en chemin relatif.
